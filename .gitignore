@@ -1,5 +1,6 @@
 **/*.pyc
 tf_files
+tf_files/*
 .idea/
 **/*~
 gradle*

@@ -1,0 +1,93 @@
+// data collections scripts
+
+
+// rename dirs (remove numbers)
+python -m scripts.rename_image_dirs.py --target_dir=tf_files\fungi_full_cleaned
+
+// copy by file count
+python -m scripts.copy_by_file_count.py --base_dir=tf_files\fungi_full_cleaned --originals_dir=images --min_files=100 --copy_dir=combined_over_
+
+
+364 at 20
+282 at 50
+196 at 100
+148 at 150
+109 at 200
+76 at 300
+36 at 500
+
+// Tensorflow commands
+
+
+// Set environment variables
+SET IMAGE_SIZE=224
+SET ARCHITECTURE="mobilenet_0.50_%IMAGE_SIZE%"
+
+
+// Start tensorboard
+tensorboard --logdir tf_files/training_summaries &
+or
+python -m tensorboard.main --logdir tf_files/training_summaries &
+
+
+// Start retrain script on images
+python -m scripts.retrain \
+  --bottleneck_dir=tf_files/bottlenecks \
+  --how_many_training_steps=500 \
+  --model_dir=tf_files/models/ \
+  --output_graph=tf_files/retrained_graph.pb \
+  --output_labels=tf_files/retrained_labels.txt \
+  --architecture="%ARCHITECTURE%" \
+  --image_dir=tf_files/flower_photos \
+optional
+  --learning_rate=0.5 (default: 0.1)
+  --summaries_dir=tf_files/training_summaries/LR_0.5
+
+  --summaries_dir=tf_files/training_summaries/"%ARCHITECTURE%" \
+
+python -m scripts.retrain --bottleneck_dir=tf_files/bottlenecks --how_many_training_steps=500 --model_dir=tf_files/models/ --summaries_dir=tf_files/training_summaries/"%ARCHITECTURE%" --output_graph=tf_files/retrained_graph.pb --output_labels=tf_files/retrained_labels.txt --architecture="%ARCHITECTURE%" --image_dir=tf_files/flower_photos
+
+python -m scripts.retrain --bottleneck_dir=tf_files/bottlenecks --how_many_training_steps=500 --model_dir=tf_files/models/ --output_graph=tf_files/retrained_graph.pb --output_labels=tf_files/retrained_labels.txt --architecture="%ARCHITECTURE%" --image_dir=tf_files/flower_photos --learning_rate=0.5 --summaries_dir=tf_files/training_summaries/mushrooms_%IMAGE_SIZE%_%date%
+
+python -m scripts.retrain --bottleneck_dir=tf_files/bottlenecks --how_many_training_steps=500 --model_dir=tf_files/models/ --output_graph=tf_files/retrained_graph.pb --output_labels=tf_files/retrained_labels.txt --architecture="%ARCHITECTURE%" --image_dir=tf_files/fungi_onethird_photos --summaries_dir=tf_files/training_summaries/mushrooms_1-3rd_%IMAGE_SIZE%_%date% --validation_batch_size=-1
+
+python -m scripts.retrain --bottleneck_dir=tf_files/bottlenecks --how_many_training_steps=500 --model_dir=tf_files/models/ --output_graph=tf_files/retrained_graph.pb --output_labels=tf_files/retrained_labels.txt --architecture="%ARCHITECTURE%" --image_dir=tf_files/fungi_onethird_photos --summaries_dir=tf_files/training_summaries/mobilenet_0.50_%IMAGE_SIZE%_mushrooms_1-3rd_%DATE%_%TIME::=-%
+
+python -m scripts.retrain --bottleneck_dir=tf_files/bottlenecks --how_many_training_steps=500 --model_dir=tf_files/models/ --output_graph=tf_files/retrained_graph.pb --output_labels=tf_files/retrained_labels.txt --architecture="%ARCHITECTURE%" --image_dir=tf_files/fungi_cleaning_demo/images_cleaned --summaries_dir=tf_files/training_summaries/mobilenet_0.50_%IMAGE_SIZE%_mushrooms_cleaned_1-3rd_%DATE%_%TIME::=-%
+
+python -m scripts.retrain --bottleneck_dir=tf_files/bottlenecks --how_many_training_steps=500 --model_dir=tf_files/models/ --output_graph=tf_files/retrained_graph.pb --output_labels=tf_files/retrained_labels.txt --architecture="%ARCHITECTURE%" --image_dir=tf_files/fungi_onethird_photos/images_cleaned --summaries_dir=tf_files/training_summaries/mobilenet_0.50_%IMAGE_SIZE%_mushrooms_cleaned_1-3rd_%DATE%_%TIME::=-% --print_misclassified_test_images
+
+python -m scripts.retrain --bottleneck_dir=tf_files/bottlenecks --how_many_training_steps=500 --model_dir=tf_files/models/ --output_graph=tf_files/retrained_graph.pb --output_labels=tf_files/retrained_labels.txt --architecture="%ARCHITECTURE%" --image_dir=tf_files/fungi_onethird_photos/cleaned_over_50 --summaries_dir=tf_files/training_summaries/mobilenet_0.50_%IMAGE_SIZE%_mushrooms_cleaned_1-3rd_over50_%DATE%_%TIME::=-%
+
+python -m scripts.retrain --bottleneck_dir=tf_files/bottlenecks --how_many_training_steps=500 --model_dir=tf_files/models/ --output_graph=tf_files/retrained_graph.pb --output_labels=tf_files/retrained_labels.txt --architecture="%ARCHITECTURE%" --image_dir=tf_files/fungi_full_cleaned/cleaned_over_50 --summaries_dir=tf_files/training_summaries/mobilenet_0.50_%IMAGE_SIZE%_mushrooms_full_over50_%DATE%_%TIME::=-%
+
+python -m scripts.retrain --bottleneck_dir=tf_files/bottlenecks --how_many_training_steps=500 --model_dir=tf_files/models/ --output_graph=tf_files/retrained_graph.pb --output_labels=tf_files/retrained_labels.txt --architecture="%ARCHITECTURE%" --image_dir=tf_files/fungi_full_cleaned/combined_over_100 --summaries_dir=tf_files/training_summaries/mobilenet_0.50_%IMAGE_SIZE%_mushrooms_combined_over100_%DATE%_%TIME::=-%
+
+
+--validation_batch_size=20
+--print_misclassified_test_images
+
+// Run prediction on test image
+python -m scripts.label_image \
+    --graph=tf_files/retrained_graph.pb  \
+    --image=tf_files/flower_photos/daisy/21652746_cc379e0eea_m.jpg
+
+
+// INCEPTION
+python -m scripts.label_image --graph=tf_files/retrained_graph.pb  --image=tf_files/flower_photos/daisy/21652746_cc379e0eea_m.jpg
+
+// MOBILE NET
+python -m scripts.label_image --graph=tf_files/retrained_graph.pb --image=tf_files/flower_photos/daisy/21652746_cc379e0eea_m.jpg --input_height=%IMAGE_SIZE% --input_width=%IMAGE_SIZE%
+
+python -m scripts.label_image --graph=tf_files/retrained_graph.pb --image=tf_files/flower_photos/roses/2414954629_3708a1a04d.jpg --input_height=%IMAGE_SIZE% --input_width=%IMAGE_SIZE%
+
+python -m scripts.label_image --graph=tf_files/retrained_graph.pb --image=tf_files/fungi_test/14e1d59c-31ea-11e8-9415-989096c07a70.jpg --input_height=%IMAGE_SIZE% --input_width=%IMAGE_SIZE%
+
+// abortiporus
+python -m scripts.label_image --graph=tf_files/retrained_graph.pb --image=tf_files/fungi_test/14e1d59c-31ea-11e8-9415-989096c07a70.jpg --input_height=%IMAGE_SIZE% --input_width=%IMAGE_SIZE%
+
+// armillaria
+python -m scripts.label_image --graph=tf_files/retrained_graph.pb --image=tf_files/fungi_test/14e2b246-31ea-11e8-9415-989096c07a70.jpg --input_height=%IMAGE_SIZE% --input_width=%IMAGE_SIZE%
+
+// agrocybe
+python -m scripts.label_image --graph=tf_files/retrained_graph.pb --image=tf_files/fungi_test/14e4a1e6-31ea-11e8-9415-989096c07a70.jpg --input_height=%IMAGE_SIZE% --input_width=%IMAGE_SIZE%
